@@ -1,0 +1,835 @@
+/* Lu Legal – the parts of the design that aren't shadcn components:
+   the page background, the hero's scale system, the section spacing and
+   the specialisation cards' effects. Ported from hero-ai (variant-focus);
+   the values are the same. Imported from globals.css. */
+
+/* ---------- Scale and page ---------- */
+:root {
+  /* 1 design px (the Figma frame is 1440 wide), stepping with the screen
+     width (see the ladder at the end); everything in the hero is sized
+     in it, so it all scales together */
+  --u: 1.4375px;
+  --hero-type: 0.85;                  /* the hero's type at 85% of the design */
+  --list-size: calc(156 * var(--hero-type) * var(--u));
+  --row: calc(var(--list-size) + 20 * var(--hero-type) * var(--u));
+  --unfocused-alpha: 0.3;
+  --unfocused-blur: 3;
+  --edge: 96px;                       /* the top bar's and the hero's edge */
+  --list-left: calc(var(--edge) + 45.69 * var(--u));
+  --nav-h: 104px;
+  --eyebrow-size: calc(72 * var(--hero-type) * var(--u));
+  --eyebrow-h: calc(87.6 * var(--hero-type) * var(--u));
+  --eyebrow-overlap: calc(10.8 * var(--hero-type) * var(--u));
+  /* the first word and half the second at the bottom of the screen */
+  --list-top: max(calc(100svh - 1.5 * var(--row)),
+                  calc(var(--nav-h) + var(--eyebrow-h) + 24 * var(--u)));
+  --eyebrow-top: calc(var(--list-top) - var(--eyebrow-h) + var(--eyebrow-overlap));
+
+  /* the patterned page background: a 12px line tile over soft glows */
+  --mesh: 0 0 / 100vw max(calc(100vw * 1929 / 1440), 100lvh) no-repeat;
+  --page-bg:
+    url("/assets/bg-tile.svg") 0 0 / 12px 12px repeat,
+    radial-gradient(60% 55% at 10% 6%,  #f7fbff 0%, rgb(247 251 255 / 0) 100%) var(--mesh),
+    radial-gradient(45% 50% at 92% 14%, #e9f5ff 0%, rgb(233 245 255 / 0) 100%) var(--mesh),
+    radial-gradient(40% 40% at 52% 46%, #e2f2ff 0%, rgb(226 242 255 / 0) 100%) var(--mesh),
+    radial-gradient(55% 55% at 84% 96%, #e9f5ff 0%, rgb(233 245 255 / 0) 100%) var(--mesh),
+    radial-gradient(45% 45% at 18% 92%, #f7fbff 0%, rgb(247 251 255 / 0) 100%) var(--mesh),
+    #d6edff;
+}
+html { scroll-behavior: smooth; }
+/* the original site's normal line height – for the page and for every
+   Tailwind text size (its text-* classes would each set their own) */
+body { line-height: normal; }
+:root {
+  --text-xs--line-height: normal;
+  --text-sm--line-height: normal;
+  --text-base--line-height: normal;
+  --text-lg--line-height: normal;
+  --text-xl--line-height: normal;
+  --text-2xl--line-height: normal;
+  --text-3xl--line-height: normal;
+  --text-4xl--line-height: normal;
+  --text-5xl--line-height: normal;
+}
+/* the background is one fixed layer behind everything; the top bar uses
+   the same layer, so it blends into the page */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: var(--page-bg);
+  pointer-events: none;
+}
+.lx-page-bg { background: var(--page-bg); }
+
+/* ---------- Top bar colour ----------
+   Over the hero (and a page's own hero) the bar shows the patterned page
+   background, and dims with the hero while it is being covered
+   (--bar-dim). Over any other section it takes that section's solid
+   colour (--bar-solid, fading in over the pattern, dimmed as the section
+   is); over the navy ones and the footer its logo and links turn white.
+   The script in topbar.tsx sets the classes and colours from the
+   section under the middle of the bar. */
+.lx-topbar { color: #1b2a4a; transition: color 0.3s ease-out; }
+.lx-topbar--dark { color: #fff; }
+.lx-topbar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--bar-solid, #d6edff);
+  opacity: 0;
+  transition: opacity 0.3s ease-out, background-color 0.3s ease-out;
+  pointer-events: none;
+}
+.lx-topbar--solid::after { opacity: 1; }
+.lx-topbar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: #0b1426;
+  opacity: var(--bar-dim, 0);
+  pointer-events: none;
+}
+
+/* ---------- Sections ----------
+   Spacing and type sizes per screen size (desktop / tablet / mobile);
+   content at most 1440 wide. */
+.lx-section {
+  position: relative;
+  padding: var(--sec-pad) calc(var(--sec-edge) + max(0px, (100% - 1440px) / 2));
+  --sec-pad: 160px;
+  --sec-edge: 96px;
+  --head-gap: 88px;
+  --h2: 120px;
+  --title: 60px;
+  --post-title: 48px;
+  --lead: 28px;
+  --body: 20px;
+  --label: 16px;
+}
+.lx-section-title {
+  margin: 0;
+  font-family: var(--font-instrument-serif), Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: var(--h2);
+  line-height: 1.16667;               /* 140 / 120 */
+}
+.lx-squares { display: flex; gap: 14px; margin-bottom: 16px; }
+.lx-squares span { width: 16px; height: 16px; background: #e15643; }
+.lx-squares span:last-child { background: #d6edff; }
+.bg-sky .lx-squares span:last-child { background: #1b2a4a; }
+
+/* ---------- Hero ----------
+   One screen plus four rows tall: the page snaps from word to word (one
+   row of scroll each). The word in focus is sharp navy, the others faint
+   and blurred (--k, set by the script: 0 in focus, 1 a row away); the
+   coral square holds still beside the focus position (--p) while the
+   words glide past. "o prawie dla" stays where it starts while the list
+   scrolls over it, blurring (--eb) and fading out (--ef). After the last
+   word the page scrolls freely. Script: src/components/home/hero.tsx. */
+html:has(.lx-hero) { scroll-snap-type: y mandatory; }
+html.lx-free-scroll { scroll-snap-type: none; }
+.lx-hero { height: calc(100svh + 4 * var(--row)); }
+/* snap points, one per word: at each, that word sits where the first starts */
+.lx-hero__snap {
+  position: absolute;
+  left: 0;
+  top: calc(var(--n) * var(--row));
+  width: 1px;
+  height: 1px;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+.lx-hero__eyebrow-track { position: absolute; inset: 0; pointer-events: none; }
+.lx-hero__eyebrow {
+  position: sticky;
+  top: var(--eyebrow-top);
+  margin: var(--eyebrow-top) 0 0 var(--list-left);
+  width: max-content;
+  filter: blur(calc(var(--eb, 0) * 9 * var(--u)));
+  opacity: calc(1 - var(--ef, 0));
+  font-family: var(--font-instrument-serif), Georgia, serif;
+  font-style: italic;
+  font-size: var(--eyebrow-size);
+  line-height: var(--eyebrow-h);
+  letter-spacing: 0.02em;
+  color: #e15643;
+}
+.lx-hero__eyebrow > span { display: inline-block; }
+.lx-hero__words {
+  position: absolute;
+  z-index: 1;                          /* scrolls over the sticky eyebrow */
+  top: var(--list-top);
+  left: var(--list-left);
+  right: 0;
+  display: grid;                       /* the list and the square's track share one cell */
+}
+.lx-hero__list, .lx-hero__dot-track { grid-area: 1 / 1; }
+.lx-hero__list {
+  font-size: var(--list-size);
+  letter-spacing: -0.02em;
+  line-height: var(--row);
+  white-space: nowrap;
+}
+.lx-hero__list > li > span {
+  display: inline-block;
+  color: color-mix(in srgb, #1b2a4a calc(100% - var(--k, 0) * (1 - var(--unfocused-alpha)) * 100%), transparent);
+  filter: blur(calc(var(--k, 0) * var(--unfocused-blur) * var(--u)));
+}
+/* the square, centred on the lowercase letters of the word in focus */
+.lx-hero__dot-track { position: relative; pointer-events: none; }
+.lx-hero__dot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: block;
+  width: calc(16 * var(--u));
+  height: calc(16 * var(--u));
+  margin: calc(var(--row) / 2 + 0.1442 * var(--list-size) - 8 * var(--u)) 0 0 calc(-45.69 * var(--u));
+  transform: translateY(calc(var(--p, 0) * var(--row)));
+  background: #e15643;
+}
+
+/* Entrance, on load: "o prawie dla" fades up; the words rise in one after
+   another; then the square slides in from the left edge and hops once.
+   <html>.lx-hero-enter (set before the first paint, see layout.tsx)
+   hides it; .lx-hero-in plays it; .lx-hero-done (the visitor scrolled)
+   shows the end at once. The wrappers move, so the script's own styles
+   on the words and the square are untouched. */
+.lx-hero-enter .lx-hero__eyebrow > span,
+.lx-hero-enter .lx-hero__list > li { opacity: 0; }
+.lx-hero-enter .lx-hero__eyebrow > span { transform: translateY(calc(24 * var(--u))); }
+.lx-hero-enter .lx-hero__list > li { transform: translateY(calc(48 * var(--u))); }
+.lx-hero-enter .lx-hero__dot-track { opacity: 0; }
+.lx-hero-enter.lx-hero-in .lx-hero__eyebrow > span,
+.lx-hero-enter.lx-hero-in .lx-hero__list > li {
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.7s ease-out, transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.lx-hero-enter.lx-hero-in .lx-hero__list > li { transition-delay: calc(0.5s + var(--i, 0) * 0.08s); }
+.lx-hero-enter.lx-hero-in .lx-hero__dot-track { opacity: 1; animation: lx-hero-square 1s 1.2s both; }
+@keyframes lx-hero-square {
+  0%   { transform: translateX(calc(-1 * var(--list-left))); animation-timing-function: cubic-bezier(0.2, 0.7, 0.2, 1); }
+  40%  { transform: none; animation-timing-function: cubic-bezier(0.2, 0.7, 0.3, 1); }
+  62%  { transform: translateY(calc(-8 * var(--u))); animation-timing-function: cubic-bezier(0.5, 0, 0.8, 0.4); }
+  80%  { transform: none; animation-timing-function: ease-out; }
+  90%  { transform: translateY(calc(-2 * var(--u))); animation-timing-function: ease-in; }
+  100% { transform: none; }
+}
+.lx-hero-enter.lx-hero-done .lx-hero__eyebrow > span,
+.lx-hero-enter.lx-hero-done .lx-hero__list > li,
+.lx-hero-enter.lx-hero-done .lx-hero__dot-track { opacity: 1; transform: none; transition: none; animation: none; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+
+/* ---------- nasze specjalizacje: the cards ----------
+   Sky text, arrow and lines. Hover: the 12px pattern fills the card at
+   10%, text and arrow turn white, the arrow moves 12px right. */
+.lx-spec {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
+  padding: 60px 40px 60px 0;
+  border-top: 1px solid #d6edff;
+  color: #d6edff;
+  transition: color 0.3s ease-out;
+}
+.lx-spec::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("/assets/spec-hover-tile.png") 0 0 / 12px 12px repeat;
+  opacity: 0;
+  transition: opacity 0.3s ease-out;
+  pointer-events: none;
+}
+li:last-child > .lx-spec { border-bottom: 1px solid #d6edff; }
+.lx-spec:hover, .lx-spec:focus-visible { color: #fff; }
+.lx-spec:hover::before, .lx-spec:focus-visible::before { opacity: 0.1; }
+.lx-spec:focus-visible { outline: 2px solid #d6edff; outline-offset: 4px; }
+/* the arrow, in the text colour (a mask), so it changes with it */
+.lx-spec__arrow {
+  position: relative;
+  flex: none;
+  width: 88px;
+  height: 88px;
+  background: currentColor;
+  -webkit-mask: url("/assets/icon-arrow.svg") center / contain no-repeat;
+  mask: url("/assets/icon-arrow.svg") center / contain no-repeat;
+  transition: transform 0.3s ease-out;
+}
+.lx-spec:hover .lx-spec__arrow,
+.lx-spec:focus-visible .lx-spec__arrow { transform: translateX(12px); }
+
+/* ---------- Labels ----------
+   Small uppercase text with a 16px square before it, in the text colour
+   (positions on the team cards, review authors). */
+.lx-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: var(--label);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.lx-label::before {
+  content: "";
+  flex: none;
+  width: 16px;
+  height: 16px;
+  background: currentColor;
+}
+
+/* ---------- nasz zespół: the member cards ----------
+   White at 60% over the sky, a navy line along the bottom; the text on
+   the left and the 640px cut-out photo on the right, standing on the
+   line – the text column runs into it. */
+.lx-member {
+  display: flex;
+  align-items: flex-end;
+  padding-left: 60px;
+  background: rgb(255 255 255 / 0.6);
+  border-bottom: 1px solid #1b2a4a;
+}
+.lx-member__photo {
+  order: 2;
+  flex: none;
+  display: block;
+  width: 640px;
+  height: 640px;
+  margin-top: 23px;
+  object-fit: cover;
+}
+.lx-member__body {
+  position: relative;
+  z-index: 1;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 40px;
+  flex: 1;
+  min-width: 0;
+  margin-right: -56px;
+  padding: 60px 0;
+}
+.lx-member__head { display: flex; flex-direction: column; gap: 40px; }
+
+/* ---------- zaufali nam ---------- */
+.lx-review {
+  margin: 0;
+  padding-bottom: 60px;
+  border-bottom: 1px solid #d6edff;
+}
+.lx-review:last-child { padding-bottom: 60px; }   /* the last one always 60 */
+
+/* ---------- Stacking ----------
+   Each layer (the home hero and every section of a page's <main>) pins
+   once its bottom reaches the bottom of the screen (--stick, set by the
+   stacking script: negative for layers taller than the screen, so all
+   their content scrolls past first), holds for --hold more scrolling –
+   while a strip of the next layer peeks in at the bottom – and the next
+   one slides up over it, with a soft shadow; the covered one dims
+   (--cover, 0 → 1). The contact section doesn't pin, so the footer just
+   follows it. Script: src/components/site/stacking.tsx. No scroll-jacking:
+   the scroll itself is never slowed down or taken over. */
+:root { --hold: 70svh; }
+.lx-hero {
+  position: sticky;
+  top: calc(-4 * var(--row));          /* pins as the last word comes into focus */
+  z-index: 0;                          /* one layer: its words stay under the section sliding over */
+  margin-bottom: var(--hold);
+}
+main > .lx-section:not(.lx-post-hero) {
+  position: sticky;
+  top: var(--stick, 0px);
+  margin-bottom: var(--hold);
+  --hold-fill: var(--hold);
+}
+main > .lx-section:not(.lx-post-hero),
+#kontakt.lx-section { box-shadow: 0 -24px 48px rgb(11 20 38 / 0.18); }   /* soft edge as it slides over */
+/* nothing to slide over right after a page's own hero: flat, no shadow
+   (as specific as the rule above, so it wins) */
+main > .lx-page-hero + .lx-section,
+main > .lx-post-hero + .lx-section { box-shadow: none; }
+/* the hold strip below a layer shorter than the screen: in the layer's
+   own colour (not the page background), dimmed with it */
+.lx-section::before {
+  content: "";
+  position: absolute;
+  inset: 100% 0 auto;
+  height: var(--hold-fill, 0px);
+  background: inherit;
+  pointer-events: none;
+}
+.lx-hero::after,
+.lx-section::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 calc(-1 * var(--hold-fill, 0px));
+  z-index: 2;                          /* over the hero's words */
+  background: #0b1426;
+  opacity: calc(var(--cover, 0) * 0.35);
+  pointer-events: none;
+}
+/* a layer still rising inside the peek strip below its edge: no shadow
+   of its own (the strip's is the edge), see stacking.tsx */
+.lx-section.lx-under-peek { box-shadow: none !important; }
+/* the peek: a strip in the next layer's colour with its soft top shadow,
+   rising at the bottom of the screen while a layer holds (the script
+   sets its colour, height and place) */
+.lx-peek {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 0;
+  box-shadow: 0 -24px 48px rgb(11 20 38 / 0.18);
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* ---------- Page hero (O nas, Kontakt, Blog) ----------
+   The page title (172px, scaling with --u below 1440) with a coral
+   square as its full stop, and the lead under it, on the patterned
+   page background. */
+.lx-page-hero {
+  position: relative;
+  min-height: min(788px, 788 * var(--u));
+  padding: min(344px, 344 * var(--u)) calc(var(--sec-edge) + max(0px, (100% - 1440px) / 2)) 96px;
+  --sec-edge: 96px;
+  --ph-lead: 32px;
+  --ph-gap: 40px;
+}
+.lx-page-hero__title {
+  margin: 0;
+  font-family: var(--font-instrument-serif), Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: min(172px, 172 * var(--u));
+  line-height: 1.0233;
+  letter-spacing: -0.02em;
+}
+/* the square: 16px at 172px, 4px after the last letter, on the baseline;
+   one small hop on arrival */
+.lx-page-hero__dot {
+  display: inline-block;
+  width: 0.093em;
+  height: 0.093em;
+  margin-left: 0.023em;
+  background: #e15643;
+  vertical-align: baseline;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .lx-page-hero__dot { animation: lx-square-hop 0.6s 0.5s both; }
+}
+.lx-page-hero__lead { margin: var(--ph-gap) 0 0; font-weight: 500; font-size: var(--ph-lead); }
+/* the squares' hop: up 6px, down, one small bounce */
+@keyframes lx-square-hop {
+  0%   { transform: none; animation-timing-function: cubic-bezier(0.2, 0.7, 0.3, 1); }
+  38%  { transform: translateY(-6px); animation-timing-function: cubic-bezier(0.5, 0, 0.8, 0.4); }
+  64%  { transform: none; animation-timing-function: ease-out; }
+  80%  { transform: translateY(-1.5px); animation-timing-function: ease-in; }
+  100% { transform: none; }
+}
+
+/* ---------- Blog list ----------
+   #filtry (the list section) stops just under the top bar when a link
+   jumps to it. */
+.lx-blog-list { padding-top: 96px; scroll-margin-top: var(--nav-h); }
+.lx-squares--muted { margin-bottom: 0; }
+.lx-squares--muted span,
+.bg-sky .lx-squares--muted span:last-child { background: #b9c4d1; }
+/* Loader: three coral squares bobbing in a wave, at the button's height */
+.lx-loader { display: flex; align-items: center; gap: 16px; height: 48px; }
+.lx-loader span {
+  width: 16px;
+  height: 16px;
+  background: #e15643;
+  will-change: transform;
+  backface-visibility: hidden;
+  animation: lx-loader-wave 0.6s cubic-bezier(0.37, 0, 0.63, 1) infinite alternate both;
+}
+.lx-loader span:nth-child(1) { animation-delay: -0.3s; }
+.lx-loader span:nth-child(2) { animation-delay: -0.15s; }
+@keyframes lx-loader-wave {
+  from { transform: translate3d(0, 8px, 0); }
+  to   { transform: translate3d(0, -8px, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lx-loader span { animation-name: lx-loader-fade; }
+  @keyframes lx-loader-fade { from { opacity: 1; } to { opacity: 0.3; } }
+}
+
+/* ---------- Blog post (Figma 691:4709) ----------
+   Navy header, then one sky layer: the article with a sticky table of
+   contents, and the author band. */
+.lx-post-hero {
+  display: flex;
+  flex-direction: column;
+  gap: min(240px, 240 * var(--u));
+  padding: 165px var(--sec-edge) 96px;   /* "Wróć na blog" always under the logo */
+}
+.lx-post-hero__head {
+  display: flex;
+  flex-direction: column;
+  gap: 80px;
+  width: 100%;
+  max-width: calc(1440px - 2 * var(--sec-edge));
+  margin-inline: auto;
+}
+.lx-post-hero__title {
+  font-weight: 400;
+  font-size: var(--h2);
+  line-height: 1.16667;
+  letter-spacing: -0.02em;
+  margin-left: -0.07em;          /* optical: the capitals' side bearing */
+}
+.lx-post-hero__meta { display: flex; flex-wrap: wrap; gap: 12px 40px; color: #d6edff; font-weight: 600; font-size: var(--body); letter-spacing: 0.05em; text-transform: uppercase; }
+
+.lx-article { padding: 0; }
+.lx-article > * { padding-inline: calc(var(--sec-edge) + max(0px, (100% - 1440px) / 2)); }
+.lx-article__main { display: flex; align-items: flex-start; gap: 96px; padding-block: 96px; }
+.lx-article__body { flex: 0 1 836px; min-width: 0; display: flex; flex-direction: column; gap: 64px; }
+.lx-article__lead { font-weight: 500; font-size: 32px; }
+.lx-article__part {
+  display: flex; flex-direction: column; gap: 16px;
+  font-weight: 400; font-size: var(--body); line-height: 1.4;
+  scroll-margin-top: calc(var(--nav-h) + 32px);   /* a jump from the contents stops under the top bar */
+}
+.lx-article__part h2 { font-weight: 600; font-size: 24px; line-height: normal; }
+.lx-article__part p + p { margin-top: calc(1.4em - 16px); }   /* one empty line between paragraphs */
+.lx-article__body strong { font-weight: 700; }
+.lx-article__body a { color: #e15643; text-decoration: underline; text-decoration-thickness: 7%; }
+.lx-tip {
+  display: flex; flex-direction: column; gap: 10px;
+  padding: 24px;
+  border-bottom: 1px solid #e15643;
+  background: rgb(255 255 255 / 0.6);
+  font-size: var(--body);
+}
+.lx-tip p + p:not(.lx-tip__label + p) { margin-top: 1.35em; }
+.lx-tip__label { display: flex; align-items: center; gap: 9px; color: #e15643; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; }
+
+/* Spis treści: sticky beside the text; one square glides to the part
+   being read */
+.lx-toc { flex: 1 0 240px; min-width: 0; position: sticky; top: 128px; display: flex; flex-direction: column; gap: 24px; }
+.lx-toc__title { color: #e15643; font-weight: 600; font-size: var(--body); letter-spacing: 0.05em; text-transform: uppercase; }
+.lx-toc a {
+  display: block;
+  padding-left: 20px;
+  font-weight: 600;
+  font-size: var(--body);
+  line-height: 1.4;
+  transition: color 0.3s ease-out;
+}
+.lx-toc a:hover, .lx-toc a[aria-current] { color: #e15643; }
+.lx-toc__marker {
+  position: absolute;
+  left: 0;
+  top: 10px;
+  width: 12px;
+  height: 12px;
+  background: #e15643;
+  pointer-events: none;
+  transition: translate 0.55s cubic-bezier(0.2, 0.7, 0.2, 1), opacity 0.3s ease-out;
+}
+@media (prefers-reduced-motion: reduce) { .lx-toc__marker { transition: none; } }
+
+/* the author: text on the left, the photo standing on the band's bottom */
+.lx-author {
+  display: flex;
+  align-items: center;
+  gap: 60px;
+  padding-top: 16px;
+  background: rgb(241 249 255);
+  scroll-margin-top: var(--nav-h);   /* "Autor: …" lands under the top bar */
+}
+.lx-author__photo { flex: none; align-self: flex-end; width: 480px; height: 480px; object-fit: cover; }
+
+/* ---------- O nas ----------
+   Team cards: a link to one (/o-nas?osoba=…) stops it 40px under the
+   top bar. nasze wartości (Figma 668:3606): a big number with a coral
+   full stop, then the value and its description; navy lines between. */
+.lx-member { scroll-margin-top: calc(var(--nav-h) + 40px); }
+.lx-value {
+  display: flex;
+  align-items: flex-start;
+  gap: 40px;
+  padding: 60px 40px;
+  border-top: 1px solid #1b2a4a;
+}
+.lx-value:last-child { border-bottom: 1px solid #1b2a4a; }
+.lx-value__num { flex: none; width: 180px; font-size: 200px; line-height: 1; font-weight: 400; }
+
+/* Kontakt: e-mail and address under the lead */
+.lx-page-hero--contact { min-height: min(892px, 892 * var(--u)); }
+.lx-page-hero__contacts { display: flex; flex-wrap: wrap; gap: 16px 40px; margin-top: 60px; }
+.lx-page-hero__contacts li { display: flex; align-items: center; gap: 12px; font-weight: 500; font-size: var(--ph-lead); }
+.lx-page-hero__contacts img { display: block; flex: none; width: 1em; height: 1em; }
+
+/* ---------- Entrances ----------
+   Scroll-in entrances, played once (script: src/components/site/stage.tsx,
+   which adds .lx-stage and .lx-stage--<kind> to a section, .is-in to it
+   and to each card – .lx-card – and the card's delay, --d). Not with
+   reduced motion, nor without JavaScript: the content never stays hidden. */
+.lx-anim-init, .lx-anim-init *, .lx-anim-init *::before, .lx-anim-init *::after { transition: none !important; }
+/* catch-up: shown at once with a short fade, no waiting */
+.lx-stage.is-quick .lx-squares span { animation: none; opacity: 1; }
+.lx-stage.is-quick > .lx-section-title,
+.lx-stage.is-quick > .lx-lead,
+.lx-stage .is-quick,
+.lx-stage .is-quick *,
+.lx-stage .is-quick::after,
+.lx-stage .is-quick *::before,
+.lx-stage .is-quick *::after {
+  transition-duration: 0.35s !important;
+  transition-delay: 0s !important;
+}
+/* a card that hasn't started to appear takes no pointer (keyboard and
+   screen readers still reach it – focusing it scrolls it in, which plays it) */
+.lx-stage .lx-card:not(.is-live) { pointer-events: none; }
+
+/* squares and heading: each square slides in, then all three hop once,
+   like dominoes, while the heading fades up 48px */
+.lx-stage .lx-squares span { opacity: 0; }
+.lx-stage.is-in .lx-squares span {
+  animation:
+    lx-square-slide 0.4s cubic-bezier(0.2, 0.7, 0.2, 1) both,
+    lx-square-hop 0.55s 0.65s both;
+}
+.lx-stage.is-in .lx-squares span:nth-child(2) { animation-delay: 0.1s, 0.75s; }
+.lx-stage.is-in .lx-squares span:nth-child(3) { animation-delay: 0.2s, 0.85s; }
+@keyframes lx-square-slide {
+  from { opacity: 0; translate: -48px 0; }
+  to   { opacity: 1; translate: none; }
+}
+.lx-stage .lx-section-title {
+  opacity: 0;
+  transform: translateY(48px);
+  transition: opacity 0.9s ease-out, transform 1.1s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.lx-stage.is-in .lx-section-title { opacity: 1; transform: none; }
+
+/* the cards that simply fade up 24px, whole */
+.lx-stage--team .lx-card,
+.lx-stage--reviews .lx-card,
+.lx-stage--blog .lx-card {
+  opacity: 0;
+  translate: 0 24px;
+  transition: opacity 0.8s ease-out var(--d, 0s), translate 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) var(--d, 0s);
+}
+/* contact: the form and the phones, a little slower */
+.lx-stage--contact .lx-card {
+  opacity: 0;
+  translate: 0 24px;
+  transition: opacity 1.1s ease-out var(--d, 0s), translate 1.2s cubic-bezier(0.2, 0.7, 0.2, 1) var(--d, 0s);
+}
+.lx-stage .lx-card.is-in { opacity: 1; translate: none; }
+
+/* nasze specjalizacje: each card in two beats – its name and arrow, then
+   its description with the line under it. The lines fade in with the
+   cards (the card's <li> draws the line under it, over the next card's
+   top border, which stays transparent), so a fast scroll never shows an
+   empty frame of lines. The rise uses `translate`, so the arrow's hover
+   nudge (transform) keeps its quick, undelayed transition. */
+.lx-stage--specs .lx-spec {
+  border-top-color: transparent;
+  transition: color 0.3s ease-out, border-color 0.8s ease-out var(--d, 0s);
+}
+.lx-stage--specs li:last-child > .lx-spec { border-bottom-color: transparent; }
+.lx-stage--specs li.lx-card:first-child.is-in > .lx-spec { border-top-color: #d6edff; }
+.lx-stage--specs li.lx-card { position: relative; }
+.lx-stage--specs li.lx-card::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 1px;
+  background: #d6edff;
+  opacity: 0;
+  transition: opacity 0.8s ease-out calc(var(--d, 0s) + 0.25s);
+  pointer-events: none;
+}
+.lx-stage--specs li.lx-card:last-child::after { bottom: 0; }
+.lx-stage--specs li.lx-card.is-in::after { opacity: 1; }
+.lx-stage--specs .lx-spec__name,
+.lx-stage--specs .lx-spec__desc,
+.lx-stage--specs .lx-spec__arrow {
+  opacity: 0;
+  translate: 0 24px;
+  transition:
+    opacity 0.8s ease-out var(--t),
+    translate 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) var(--t),
+    transform 0.3s ease-out;
+}
+.lx-stage--specs .lx-spec__name,
+.lx-stage--specs .lx-spec__arrow { --t: var(--d, 0s); }
+.lx-stage--specs .lx-spec__desc { --t: calc(var(--d, 0s) + 0.25s); }
+.lx-stage--specs li.is-in .lx-spec__name,
+.lx-stage--specs li.is-in .lx-spec__desc,
+.lx-stage--specs li.is-in .lx-spec__arrow { opacity: 1; translate: none; }
+
+/* nasz zespół: the lead follows the heading, rising like it; once (most
+   of) a card is on screen, its position's square hops */
+.lx-stage--team .lx-lead {
+  opacity: 0;
+  transform: translateY(48px);
+  transition: opacity 0.9s ease-out 0.5s, transform 1.1s cubic-bezier(0.2, 0.7, 0.2, 1) 0.5s;
+}
+.lx-stage--team.is-in .lx-lead { opacity: 1; transform: none; }
+.lx-stage--team .lx-card.is-seen .lx-label::before { animation: lx-square-hop 0.55s var(--ld, 0s) both; }
+
+/* zaufali nam: the stars pop in one by one once the whole review is on
+   screen, then the square before the reviewer's name hops */
+.lx-stars-ready .lx-stars path {
+  opacity: 0;
+  transform: scale(0.3);
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: opacity 0.3s ease-out, transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.lx-stars-ready .lx-stars path:nth-child(2) { transition-delay: 0.12s; }
+.lx-stars-ready .lx-stars path:nth-child(3) { transition-delay: 0.24s; }
+.lx-stars-ready .lx-stars path:nth-child(4) { transition-delay: 0.36s; }
+.lx-stars-ready .lx-stars path:nth-child(5) { transition-delay: 0.48s; }
+.lx-stars-ready .stars-in .lx-stars path { opacity: 1; transform: none; }
+.lx-stage--reviews .lx-card.stars-in .lx-label::before { animation: lx-square-hop 0.55s 0.8s both; }
+
+/* nasze wartości: each row in turn – its line fades in with it, the
+   number rises through its baseline (clipped there, like a horizon),
+   then the title and the description fade up */
+.lx-value__rise { display: block; }
+.lx-values-anim .lx-value { opacity: 0; transition: opacity 0.6s ease-out var(--d, 0s); }
+.lx-values-anim .lx-value__num { clip-path: inset(-40px -40px 0 -40px); }
+.lx-values-anim .lx-value__rise {
+  transform: translateY(105%);
+  transition: transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) calc(var(--d, 0s) + 0.05s);
+}
+.lx-values-anim .lx-value__name,
+.lx-values-anim .lx-value__desc {
+  opacity: 0;
+  translate: 0 16px;
+  transition: opacity 0.7s ease-out, translate 0.8s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.lx-values-anim .lx-value__name { transition-delay: calc(var(--d, 0s) + 0.2s); }
+.lx-values-anim .lx-value__desc { transition-delay: calc(var(--d, 0s) + 0.35s); }
+.lx-values-anim .lx-value.is-in { opacity: 1; }
+.lx-values-anim .lx-value.is-in .lx-value__rise { transform: none; }
+.lx-values-anim .lx-value.is-in .lx-value__name,
+.lx-values-anim .lx-value.is-in .lx-value__desc { opacity: 1; translate: none; }
+.lx-values-anim .lx-value.is-quick,
+.lx-values-anim .lx-value.is-quick * { transition-duration: 0.35s !important; transition-delay: 0s !important; }
+
+/* Blog post hero, on load: the back link fades in, the tags fade up one
+   after another, the title rises 48px, the date row fades up and its
+   square hops. <html>.lx-post-enter (set before the first paint, see
+   layout.tsx) hides it; .lx-post-in plays it; .lx-post-done (the visitor
+   scrolled) shows the end at once. Nothing takes clicks until it has
+   appeared. */
+/* (its hover colour change, here so the entrance can take over its transition) */
+.lx-post-hero__back { transition: color 0.3s ease-out; }
+.lx-post-enter .lx-post-hero__back,
+.lx-post-enter .lx-post-hero__cats > li,
+.lx-post-enter .lx-post-hero__title,
+.lx-post-enter .lx-post-hero__meta { opacity: 0; pointer-events: none; }
+.lx-post-enter .lx-post-hero__cats > li,
+.lx-post-enter .lx-post-hero__meta { translate: 0 24px; }
+.lx-post-enter .lx-post-hero__title { translate: 0 48px; }
+.lx-post-enter.lx-post-in .lx-post-hero__back,
+.lx-post-enter.lx-post-in .lx-post-hero__cats > li,
+.lx-post-enter.lx-post-in .lx-post-hero__title,
+.lx-post-enter.lx-post-in .lx-post-hero__meta {
+  opacity: 1;
+  translate: none;
+  pointer-events: auto;
+  transition: opacity 0.7s ease-out var(--t, 0s), translate 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) var(--t, 0s), pointer-events 0s var(--t, 0s);
+  transition-behavior: allow-discrete;   /* clickable only from its own start */
+}
+.lx-post-enter.lx-post-in .lx-post-hero__title { transition-duration: 0.9s, 1.1s, 0s; }
+.lx-post-enter.lx-post-in .lx-post-hero__cats > li { --t: 0.15s; }
+.lx-post-enter.lx-post-in .lx-post-hero__cats > li:nth-child(2) { --t: 0.25s; }
+.lx-post-enter.lx-post-in .lx-post-hero__cats > li:nth-child(3) { --t: 0.35s; }
+.lx-post-enter.lx-post-in .lx-post-hero__title { --t: 0.3s; }
+.lx-post-enter.lx-post-in .lx-post-hero__meta { --t: 0.7s; }
+.lx-post-enter.lx-post-in .lx-post-hero__meta .lx-label::before { animation: lx-square-hop 0.55s 1.1s both; }
+.lx-post-enter.lx-post-done .lx-post-hero__back,
+.lx-post-enter.lx-post-done .lx-post-hero__cats > li,
+.lx-post-enter.lx-post-done .lx-post-hero__title,
+.lx-post-enter.lx-post-done .lx-post-hero__meta { transition: none; }
+.lx-post-enter.lx-post-done .lx-post-hero__meta .lx-label::before { animation: none; }
+
+/* ---------- Tablet and mobile ---------- */
+@media (max-width: 1100px) {
+  :root { --edge: 40px; --nav-h: 92px; --list-top: calc(548 * var(--u)); }
+  .lx-section { --sec-pad: 120px; --sec-edge: 40px; --head-gap: 64px; --h2: 86px; --title: 44px; --post-title: 36px; --lead: 24px; --body: 18px; --label: 14px; }
+  .lx-spec { padding: 44px 0; }
+  .lx-page-hero { --sec-edge: 40px; --ph-lead: 26px; --ph-gap: 32px; padding-bottom: 80px; }
+  .lx-blog-list { padding-top: 72px; }
+  .lx-value { gap: 32px; padding: 44px 24px; }
+  .lx-value__num { width: 130px; font-size: 140px; }
+  .lx-post-hero { gap: 160px; padding-top: 140px; padding-bottom: 72px; }
+  .lx-post-hero__head { gap: 48px; }
+  .lx-article__main { flex-direction: column; gap: 48px; padding-block: 72px; }
+  .lx-article__body { flex: none; width: 100%; }
+  .lx-toc { order: -1; position: relative; top: auto; flex: none; }   /* above the text, not sticky */
+  .lx-author__photo { width: 320px; height: 320px; }
+  .lx-spec__arrow { width: 64px; height: 64px; }
+  .lx-member { padding-left: 40px; }
+  .lx-member__photo { width: 360px; height: 360px; }
+  .lx-member__body { margin-right: -24px; padding: 40px 0; }
+}
+@media (max-width: 767px) {
+  :root {
+    --edge: 16px;
+    --nav-h: 80px;
+    --hero-type: 1;
+    --list-top: max(calc(100svh - 5 * var(--row) - 40px),
+                    calc(var(--nav-h) + var(--eyebrow-h) + 24 * var(--u)));
+  }
+  .lx-section { --sec-pad: 80px; --sec-edge: 16px; --head-gap: 48px; --h2: 60px; --title: 32px; --post-title: 26px; --lead: 20px; --body: 16px; --label: 13px; }
+  .lx-spec { padding: 32px 0; gap: 16px; }
+  .lx-page-hero { --sec-edge: 16px; --ph-lead: 20px; --ph-gap: 24px; padding-bottom: 56px; }
+  .lx-page-hero__title { font-size: 72px; }
+  .lx-blog-list { padding-top: 48px; }
+  .lx-value { flex-direction: column; gap: 16px; padding: 32px 0; }
+  .lx-value__num { width: auto; font-size: 80px; }
+  .lx-page-hero__contacts { margin-top: 40px; }
+  .lx-page-hero__contacts img { width: 24px; height: 24px; }
+  .lx-post-hero { gap: 96px; padding-top: 120px; padding-bottom: 48px; }
+  .lx-post-hero__head { gap: 32px; }
+  .lx-post-hero__title { font-size: 40px; }
+  .lx-article__main { padding-block: 48px; }
+  .lx-article__body { gap: 48px; }
+  .lx-article__lead { font-size: 24px; }
+  .lx-article__part h2 { font-size: 20px; }
+  .lx-author { flex-direction: column; align-items: flex-start; gap: 0; padding-top: 48px; }
+  .lx-author__photo { align-self: center; width: 100%; max-width: 360px; height: auto; aspect-ratio: 1; }
+  .lx-review { padding-bottom: 40px; }
+  .lx-spec__arrow { width: 44px; height: 44px; }
+  /* the text on top, the photo under it, standing on the line */
+  .lx-member { flex-direction: column; align-items: stretch; padding-left: 0; }
+  .lx-member__body { margin-right: 0; padding: 32px 24px 24px; }
+  .lx-member__head { gap: 24px; }
+  .lx-member__photo { align-self: flex-end; width: 100%; max-width: 360px; height: auto; aspect-ratio: 1; margin-top: 0; }
+}
+/* the scale ladder: 1 design px per screen width */
+@media (max-width: 1920px) { :root { --u: 1.25px; } }
+@media (max-width: 1654px) { :root { --u: 1.15625px; } }
+@media (max-width: 1531px) { :root { --u: 1.0625px; } }
+@media (max-width: 1450px) { :root { --u: 1px; } }
+@media (max-width: 1366px) { :root { --u: 0.9375px; } }
+@media (max-width: 1285px) { :root { --u: 0.875px; } }
+@media (max-width: 1238px) { :root { --u: 0.8125px; } }
+@media (max-width: 1118px) { :root { --u: 0.6875px; } }
+@media (max-width: 908px)  { :root { --u: 0.55px; } }
+@media (max-width: 736px)  { :root { --u: min(0.4375px, calc((100vw - 32px) / 1214)); } }
