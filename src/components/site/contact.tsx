@@ -33,7 +33,7 @@ export function Contact() {
       <Squares />
       <SectionTitle id="kontakt-title">porozmawiajmy o Twojej sprawie</SectionTitle>
 
-      <div className="mt-12 flex flex-col items-start gap-16 md:mt-[72px] lg:mt-24 lg:flex-row lg:gap-24">
+      <div className="mt-6 flex flex-col items-start gap-16 md:mt-[72px] lg:mt-24 lg:flex-row lg:gap-24">
         <form
           className="flex w-full min-w-0 flex-col gap-8 lg:w-auto lg:flex-[0_1_741px]"
           data-stage-card

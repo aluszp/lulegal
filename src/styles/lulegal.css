@@ -70,29 +70,23 @@ body::before {
    colour (--bar-solid, fading in over the pattern, dimmed as the section
    is); over the navy ones and the footer its logo and links turn white.
    The script in topbar.tsx sets the classes and colours from the
-   section under the middle of the bar. */
-.lx-topbar { color: #1b2a4a; transition: color 0.3s ease-out; }
+   section under the middle of the bar.
+   All three – the solid colour, the dim and the pattern – are layers of
+   the bar's own background, not overlays on top of it: an overlay's edge
+   can round to a different device pixel than the bar's (at some zoom
+   levels), and a hairline of the pattern then shows along the bottom. */
+@property --bar-a { syntax: "<number>"; inherits: false; initial-value: 0; }          /* the solid colour's strength, 0–1 */
+@property --bar-solid { syntax: "<color>"; inherits: false; initial-value: #d6edff; }
+.lx-topbar {
+  color: #1b2a4a;
+  background:
+    linear-gradient(color-mix(in srgb, var(--bar-solid) calc(var(--bar-a) * 100%), transparent) 0 0),
+    linear-gradient(color-mix(in srgb, #0b1426 calc(var(--bar-dim, 0) * 100%), transparent) 0 0),
+    var(--page-bg);
+  transition: color 0.3s ease-out, --bar-a 0.3s ease-out, --bar-solid 0.3s ease-out;
+}
 .lx-topbar--dark { color: #fff; }
-.lx-topbar::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: var(--bar-solid, #d6edff);
-  opacity: 0;
-  transition: opacity 0.3s ease-out, background-color 0.3s ease-out;
-  pointer-events: none;
-}
-.lx-topbar--solid::after { opacity: 1; }
-.lx-topbar::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: #0b1426;
-  opacity: var(--bar-dim, 0);
-  pointer-events: none;
-}
+.lx-topbar--solid { --bar-a: 1; }
 
 /* ---------- Sections ----------
    Spacing and type sizes per screen size (desktop / tablet / mobile);
@@ -449,7 +443,7 @@ main > .lx-post-hero + .lx-section { box-shadow: none; }
 .lx-squares--muted span,
 .bg-sky .lx-squares--muted span:last-child { background: #b9c4d1; }
 /* Loader: three coral squares bobbing in a wave, at the button's height */
-.lx-loader { display: flex; align-items: center; gap: 16px; height: 48px; }
+.lx-loader { display: flex; align-items: center; gap: 16px; height: 48px; --bob: 8px; }   /* --bob: half the wave's height */
 .lx-loader span {
   width: 16px;
   height: 16px;
@@ -461,8 +455,8 @@ main > .lx-post-hero + .lx-section { box-shadow: none; }
 .lx-loader span:nth-child(1) { animation-delay: -0.3s; }
 .lx-loader span:nth-child(2) { animation-delay: -0.15s; }
 @keyframes lx-loader-wave {
-  from { transform: translate3d(0, 8px, 0); }
-  to   { transform: translate3d(0, -8px, 0); }
+  from { transform: translate3d(0, var(--bob), 0); }
+  to   { transform: translate3d(0, calc(-1 * var(--bob)), 0); }
 }
 @media (prefers-reduced-motion: reduce) {
   .lx-loader span { animation-name: lx-loader-fade; }
@@ -768,6 +762,59 @@ main > .lx-post-hero + .lx-section { box-shadow: none; }
 .lx-post-enter.lx-post-done .lx-post-hero__meta { transition: none; }
 .lx-post-enter.lx-post-done .lx-post-hero__meta .lx-label::before { animation: none; }
 
+/* ---------- Mobile menu ----------
+   In the page's motion language, and clean – no fades: the panel slides
+   in whole on the site's ease-out, its contents in place (topbar.tsx).
+   The close icon is built from the burger: first the middle line slides
+   out to the right, cut off at the burger's own end (a clip in
+   topbar.tsx) – the sideways move of the arrows in nasze specjalizacje –
+   and as it goes, the top and bottom lines swing into the X (each turns
+   ±45° while gliding to the centre). The middle line is gone before they
+   have turned far, so the three never cross. Closing: the same,
+   backwards, on the quick ease-in the panel leaves with.
+   Rest state: the X. */
+.lx-close-icon path { transform-box: view-box; transform-origin: 20px 20px; }
+.lx-close-icon__top { transform: rotate(45deg) translateY(6px); }
+.lx-close-icon__mid { transform: translateX(32px); }
+.lx-close-icon__bottom { transform: rotate(-45deg) translateY(-6px); }
+@media (prefers-reduced-motion: no-preference) {
+  /* (longhands: the build drops the timing from a shorthand without a name)
+     Opening starts once the panel has (nearly) landed, so the burger
+     turns into the X in its place: the middle
+     line at 0.3s, quickly (0.25s); the X once it has gone, from 0.5s
+     (0.55s). */
+  [data-state="open"] > * > .lx-close-icon path {
+    animation-duration: 0.55s;
+    animation-delay: 0.5s;
+    animation-timing-function: cubic-bezier(0.2, 0.7, 0.2, 1);
+    animation-fill-mode: both;
+  }
+  [data-state="open"] > * > .lx-close-icon .lx-close-icon__top { animation-name: lx-x-top; }
+  [data-state="open"] > * > .lx-close-icon .lx-close-icon__mid { animation-name: lx-x-mid; animation-duration: 0.25s; animation-delay: 0.3s; }
+  [data-state="open"] > * > .lx-close-icon .lx-close-icon__bottom { animation-name: lx-x-bottom; }
+  /* closing, all in 0.3s: the X opens while the middle line slides back
+     in during its second half */
+  [data-state="closed"] > * > .lx-close-icon path {
+    animation-duration: 0.3s;
+    /* the panel's ease-in, cubic-bezier(0.5, 0, 0.8, 0.4) – mirrored, as
+       the keyframes run backwards */
+    animation-timing-function: cubic-bezier(0.2, 0.6, 0.5, 1);
+    animation-direction: reverse;
+    animation-fill-mode: both;
+  }
+  [data-state="closed"] > * > .lx-close-icon .lx-close-icon__top { animation-name: lx-x-top-back; }
+  [data-state="closed"] > * > .lx-close-icon .lx-close-icon__mid { animation-name: lx-x-mid-back; animation-duration: 0.15s; animation-delay: 0.15s; }
+  [data-state="closed"] > * > .lx-close-icon .lx-close-icon__bottom { animation-name: lx-x-bottom-back; }
+}
+/* burger → X; played backwards for X → burger (the "-back" copies only
+   restart the animation when the state changes) */
+@keyframes lx-x-top         { from { transform: rotate(0deg) translateY(0); } to { transform: rotate(45deg) translateY(6px); } }
+@keyframes lx-x-top-back    { from { transform: rotate(0deg) translateY(0); } to { transform: rotate(45deg) translateY(6px); } }
+@keyframes lx-x-bottom      { from { transform: rotate(0deg) translateY(0); } to { transform: rotate(-45deg) translateY(-6px); } }
+@keyframes lx-x-bottom-back { from { transform: rotate(0deg) translateY(0); } to { transform: rotate(-45deg) translateY(-6px); } }
+@keyframes lx-x-mid         { from { transform: translateX(0); } to { transform: translateX(32px); } }
+@keyframes lx-x-mid-back    { from { transform: translateX(0); } to { transform: translateX(32px); } }
+
 /* ---------- Tablet and mobile ---------- */
 @media (max-width: 1100px) {
   :root { --edge: 40px; --nav-h: 92px; --list-top: calc(548 * var(--u)); }
@@ -789,38 +836,75 @@ main > .lx-post-hero + .lx-section { box-shadow: none; }
   .lx-member__body { margin-right: -24px; padding: 40px 0; }
 }
 @media (max-width: 767px) {
+  /* (Figma: Mobile, 904:545) a 24px edge; the hero's list starts at it,
+     the square in the margin; "o prawie dla" at 32px, 4px above the
+     first word; 4px between the words */
   :root {
-    --edge: 16px;
+    --edge: 24px;
     --nav-h: 80px;
     --hero-type: 1;
+    --list-left: var(--edge);
+    --row: calc(var(--list-size) + 10px);
+    --eyebrow-size: 32px;
+    --eyebrow-overlap: -4px;
     --list-top: max(calc(100svh - 5 * var(--row) - 40px),
                     calc(var(--nav-h) + var(--eyebrow-h) + 24 * var(--u)));
   }
-  .lx-section { --sec-pad: 80px; --sec-edge: 16px; --head-gap: 48px; --h2: 60px; --title: 32px; --post-title: 26px; --lead: 20px; --body: 16px; --label: 13px; }
-  .lx-spec { padding: 32px 0; gap: 16px; }
-  .lx-page-hero { --sec-edge: 16px; --ph-lead: 20px; --ph-gap: 24px; padding-bottom: 56px; }
-  .lx-page-hero__title { font-size: 72px; }
+  .lx-section { --sec-pad: 80px; --sec-edge: 24px; --head-gap: 48px; --h2: 56px; --title: 32px; --post-title: 28px; --lead: 20px; --body: 16px; --label: 13px; }
+  .lx-section-title { line-height: 1.21429; }   /* 68 / 56 */
+  /* the hero's square: 8px (Figma Mobile 904:545), still centred on the
+     lowercase letters of the word in focus */
+  .lx-hero__dot { width: 8px; height: 8px; margin-top: calc(var(--row) / 2 + 0.1442 * var(--list-size) - 4px); }
+  /* no hold after the last word: the next section slides in as soon as
+     "samorządowców" is in focus, instead of an empty screen of hero */
+  .lx-hero { margin-bottom: 0; }
+  .lx-squares { gap: 10.5px; }
+  .lx-squares span { width: 12px; height: 12px; }
+  .lx-label::before { width: 12px; height: 12px; }
+  /* rows and cards run edge to edge, their content on the 24px edge */
+  .lx-bleed { margin-inline: calc(-1 * var(--sec-edge)); }
+  .lx-spec { padding: 32px var(--sec-edge); gap: 16px; }
+  .lx-review { padding-inline: var(--sec-edge); }
+  .lx-review:last-child { padding-bottom: 40px; }
+  /* (Figma Mobile / blog, Mobile / o nas) a 112px title on a 90px line,
+     200px from the top, its 12px square right after the last letter;
+     40px to the lead, 80px under it. O nas: 100px, 160px from the top. */
+  .lx-page-hero { --sec-edge: 24px; --ph-lead: 20px; --ph-gap: 40px; min-height: 0; padding-top: 200px; padding-bottom: 80px; }
+  .lx-page-hero__title { font-size: 112px; line-height: 90px; }
+  .lx-page-hero__dot { width: 12px; height: 12px; margin-left: 4px; translate: 0 -1px; }   /* 4px after the last letter, 8px above the line's bottom */
+  .lx-page-hero--about { padding-top: 160px; }
+  .lx-page-hero--about .lx-page-hero__title { font-size: 100px; }
+  .lx-page-hero--about .lx-page-hero__dot { translate: 0 3px; }
   .lx-blog-list { padding-top: 48px; }
-  .lx-value { flex-direction: column; gap: 16px; padding: 32px 0; }
+  /* the loader in the mobile squares' size (12px), at the mobile button's height */
+  .lx-loader { gap: 12px; height: 40px; --bob: 6px; }
+  .lx-loader span { width: 12px; height: 12px; }
+  .lx-value { flex-direction: column; gap: 16px; padding: 32px var(--sec-edge); }   /* edge to edge (.lx-bleed), its content on the edge */
   .lx-value__num { width: auto; font-size: 80px; }
   .lx-page-hero__contacts { margin-top: 40px; }
   .lx-page-hero__contacts img { width: 24px; height: 24px; }
-  .lx-post-hero { gap: 96px; padding-top: 120px; padding-bottom: 48px; }
-  .lx-post-hero__head { gap: 32px; }
-  .lx-post-hero__title { font-size: 40px; }
-  .lx-article__main { padding-block: 48px; }
-  .lx-article__body { gap: 48px; }
-  .lx-article__lead { font-size: 24px; }
+  /* (Figma Mobile / blog post, 936:718) tags, title and meta 48 apart; the
+     date, author and reading time one under another, 16 apart */
+  .lx-post-hero { gap: 96px; padding-top: 120px; padding-bottom: 60px; }
+  .lx-post-hero__head { gap: 48px; }
+  .lx-post-hero__title { font-size: 44px; line-height: 50px; }
+  .lx-post-hero__meta { flex-direction: column; align-items: flex-start; gap: 16px; }
+  /* the contents, then the lead 60 under them; the parts and tips 40 apart */
+  .lx-article__main { gap: 60px; padding-block: 60px; }
+  .lx-article__body { gap: 40px; }
+  .lx-article__lead { font-size: 24px; margin-bottom: 20px; }
+  .lx-toc__marker { top: 8px; width: 8px; height: 8px; }
   .lx-article__part h2 { font-size: 20px; }
   .lx-author { flex-direction: column; align-items: flex-start; gap: 0; padding-top: 48px; }
   .lx-author__photo { align-self: center; width: 100%; max-width: 360px; height: auto; aspect-ratio: 1; }
   .lx-review { padding-bottom: 40px; }
   .lx-spec__arrow { width: 44px; height: 44px; }
-  /* the text on top, the photo under it, standing on the line */
+  /* the text on top, the photo under it, standing on the line: the whole
+     photo, at most 358px, centred */
   .lx-member { flex-direction: column; align-items: stretch; padding-left: 0; }
   .lx-member__body { margin-right: 0; padding: 32px 24px 24px; }
   .lx-member__head { gap: 24px; }
-  .lx-member__photo { align-self: flex-end; width: 100%; max-width: 360px; height: auto; aspect-ratio: 1; margin-top: 0; }
+  .lx-member__photo { align-self: center; width: 100%; max-width: 358px; height: auto; aspect-ratio: 1; margin-top: 0; }
 }
 /* the scale ladder: 1 design px per screen width */
 @media (max-width: 1920px) { :root { --u: 1.25px; } }

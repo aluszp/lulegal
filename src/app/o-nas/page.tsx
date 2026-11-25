@@ -19,6 +19,7 @@ export default function AboutPage() {
     <main className="contents">
       {/* "contents": the sections pin against the whole page, not just <main> (see "Stacking" in lulegal.css) */}
       <PageHero
+        className="lx-page-hero--about"
         title="o nas"
         lead="Jesteśmy duetem prawników z Krakowa. Każde z nas wnosi inne doświadczenie, ale podchodzimy do pracy tak samo: spokojnie, rzetelnie i z myślą o człowieku, który do nas przychodzi. Poznaj nas bliżej."
       />

@@ -11,7 +11,7 @@ export function Specializations() {
     <Section tone="navy" stage="specs" id="specjalizacje" aria-labelledby="specjalizacje-title">
       <Squares />
       <SectionTitle id="specjalizacje-title">nasze specjalizacje</SectionTitle>
-      <ul className="mt-12 md:mt-[72px] lg:mt-[100px]">
+      <ul className="lx-bleed mt-12 md:mt-[72px] lg:mt-[100px]">
         {specializations.map((s) => (
           <li key={s.category} data-stage-card>
             <Link href={`/blog?kategoria=${s.category}&przewin`} className="lx-spec">

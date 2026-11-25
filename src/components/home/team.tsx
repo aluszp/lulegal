@@ -24,7 +24,8 @@ export function Team({ full = false }: { full?: boolean }) {
         </p>
       )}
 
-      <div className="mt-[var(--head-gap)] flex flex-col gap-10">
+      {/* mobile: the cards edge to edge, 60px under the lead, 24px apart */}
+      <div className="lx-bleed mt-[60px] flex flex-col gap-6 md:mt-[var(--head-gap)] md:gap-10">
         {team.map((m) => {
           const person = contact.people.find((p) => p.name === m.name)!;
           return (
@@ -35,7 +36,7 @@ export function Team({ full = false }: { full?: boolean }) {
                 alt={m.name}
                 width={640}
                 height={640}
-                sizes="(max-width: 767px) 360px, (max-width: 1100px) 360px, 640px"
+                sizes="(max-width: 767px) 358px, (max-width: 1100px) 360px, 640px"
               />
               <div className="lx-member__body">
                 <div className="lx-member__head">

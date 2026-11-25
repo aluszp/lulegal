@@ -199,7 +199,8 @@ function List({ category }: { category: Category | "" }) {
             <Loader />
           </div>
         ) : shown.length > 0 ? (
-          <div className="flex flex-col gap-10">
+          // mobile: the cards edge to edge, 24px apart (as on the home page)
+          <div className="lx-bleed flex flex-col gap-6 md:gap-10">
             {shown.map(({ post, i }) => (
               <PostCard key={i} post={post} heading="h2" tabIndex={-1} data-post={i} />
             ))}

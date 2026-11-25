@@ -28,7 +28,7 @@ export function Reviews() {
   return (
     <Section tone="navy" stage="reviews" id="opinie" aria-labelledby="opinie-title">
       <SectionTitle id="opinie-title">zaufali nam</SectionTitle>
-      <div className="mt-[var(--head-gap)] flex flex-col gap-10 md:gap-[60px]">
+      <div className="lx-bleed mt-[var(--head-gap)] flex flex-col gap-10 md:gap-[60px]">
         {reviews.map((r) => (
           <figure key={r.author} className="lx-review" data-stage-card>
             <div className="flex max-w-[860px] flex-col gap-8">

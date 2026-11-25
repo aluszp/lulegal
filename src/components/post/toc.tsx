@@ -62,7 +62,7 @@ export function Toc({ parts }: { parts: { id: string; title: string }[] }) {
       <p className="lx-toc__title" id="toc-title">
         Spis treści
       </p>
-      <ol className="flex flex-col gap-6">
+      <ol className="flex flex-col gap-4 md:gap-6">
         {parts.map((p, i) => (
           <li key={p.id}>
             <a href={`#${p.id}`} aria-current={i === current ? "true" : undefined}>

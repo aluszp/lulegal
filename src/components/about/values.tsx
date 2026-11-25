@@ -8,7 +8,8 @@ export function Values() {
     <Section tone="sky" stage="values" id="wartosci" aria-labelledby="wartosci-title">
       <Squares />
       <SectionTitle id="wartosci-title">nasze wartości</SectionTitle>
-      <ol className="mt-12 md:mt-[72px] lg:mt-[100px]">
+      {/* mobile: the rows and their lines edge to edge (Figma Mobile / o nas) */}
+      <ol className="lx-bleed mt-12 md:mt-[72px] lg:mt-[100px]">
         {values.map((v, i) => (
           <li key={v.name} className="lx-value" data-stage-card>
             <span className="lx-value__num" aria-hidden>
