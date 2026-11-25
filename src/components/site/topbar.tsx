@@ -87,15 +87,15 @@ export function Topbar() {
       // bar turns solid, so the bright pattern never flashes in between
       const hero = document.querySelector<HTMLElement>(".lx-hero");
       const heroCover = hero ? parseFloat(hero.style.getPropertyValue("--cover")) || 0 : 0;
-      bar.style.setProperty("--bar-dim", (heroCover * 0.35).toFixed(3));
+      bar.style.setProperty("--bar-dim", (heroCover * 0.15).toFixed(3));
       bar.classList.toggle("lx-topbar--dark", !!under && (under.classList.contains("bg-navy") || under.tagName === "FOOTER"));
       if (under) {
         // the section's colour, dimmed the way the section is while being
-        // covered (its ::after: #0b1426 at cover × 0.35)
-        const a = (parseFloat(under.style.getPropertyValue("--cover")) || 0) * 0.35;
+        // covered (its ::after: #3d5a8a multiplied, at cover × 0.15)
+        const a = (parseFloat(under.style.getPropertyValue("--cover")) || 0) * 0.15;
         const [r, g, b] = getComputedStyle(under).backgroundColor.match(/\d+/g)!.map(Number);
-        const mix = (c: number, d: number) => Math.round(c * (1 - a) + d * a);
-        bar.style.setProperty("--bar-solid", `rgb(${mix(r, 11)} ${mix(g, 20)} ${mix(b, 38)})`);
+        const mix = (c: number, d: number) => Math.round(c * (1 - a) + ((c * d) / 255) * a);
+        bar.style.setProperty("--bar-solid", `rgb(${mix(r, 61)} ${mix(g, 90)} ${mix(b, 138)})`);
       }
     }
     const request = () => {

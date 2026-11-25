@@ -81,7 +81,7 @@ body::before {
   color: #1b2a4a;
   background:
     linear-gradient(color-mix(in srgb, var(--bar-solid) calc(var(--bar-a) * 100%), transparent) 0 0),
-    linear-gradient(color-mix(in srgb, #0b1426 calc(var(--bar-dim, 0) * 100%), transparent) 0 0),
+    linear-gradient(color-mix(in srgb, #3d5a8a calc(var(--bar-dim, 0) * 100%), transparent) 0 0),
     var(--page-bg);
   transition: color 0.3s ease-out, --bar-a 0.3s ease-out, --bar-solid 0.3s ease-out;
 }
@@ -332,8 +332,12 @@ li:last-child > .lx-spec { border-bottom: 1px solid #d6edff; }
    stacking script: negative for layers taller than the screen, so all
    their content scrolls past first), holds for --hold more scrolling –
    while a strip of the next layer peeks in at the bottom – and the next
-   one slides up over it, with a soft shadow; the covered one dims
-   (--cover, 0 → 1). The contact section doesn't pin, so the footer just
+   one slides up over it, with a tight shadow in the brand navy; the
+   covered one deepens in its own hue (--cover, 0 → 1): a cool blue
+   multiplied over it, at most 15% – sky turns a deeper blue, never grey.
+   (The hero has no background of its own, so over it the blue is a plain
+   15% tint – on the light pattern that comes to the same colour.)
+   The contact section doesn't pin, so the footer just
    follows it. Script: src/components/site/stacking.tsx. No scroll-jacking:
    the scroll itself is never slowed down or taken over. */
 :root { --hold: 70svh; }
@@ -350,7 +354,7 @@ main > .lx-section:not(.lx-post-hero) {
   --hold-fill: var(--hold);
 }
 main > .lx-section:not(.lx-post-hero),
-#kontakt.lx-section { box-shadow: 0 -24px 48px rgb(11 20 38 / 0.18); }   /* soft edge as it slides over */
+#kontakt.lx-section { box-shadow: 0 -8px 24px rgb(27 42 74 / 0.12); }   /* a crisp edge as it slides over */
 /* nothing to slide over right after a page's own hero: flat, no shadow
    (as specific as the rule above, so it wins) */
 main > .lx-page-hero + .lx-section,
@@ -371,8 +375,9 @@ main > .lx-post-hero + .lx-section { box-shadow: none; }
   position: absolute;
   inset: 0 0 calc(-1 * var(--hold-fill, 0px));
   z-index: 2;                          /* over the hero's words */
-  background: #0b1426;
-  opacity: calc(var(--cover, 0) * 0.35);
+  background: #3d5a8a;                 /* a cool blue, multiplied: the layer deepens in its own hue */
+  mix-blend-mode: multiply;
+  opacity: calc(var(--cover, 0) * 0.15);
   pointer-events: none;
 }
 /* a layer still rising inside the peek strip below its edge: no shadow
@@ -386,7 +391,7 @@ main > .lx-post-hero + .lx-section { box-shadow: none; }
   left: 0;
   right: 0;
   height: 0;
-  box-shadow: 0 -24px 48px rgb(11 20 38 / 0.18);
+  box-shadow: 0 -8px 24px rgb(27 42 74 / 0.12);   /* the same edge as the layers' */
   pointer-events: none;
   z-index: 2;
 }
