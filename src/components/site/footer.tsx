@@ -4,18 +4,19 @@ import Link from "next/link";
 import { Logo } from "@/components/site/logo";
 import { contact, nav } from "@/lib/site";
 
-/* Footer (Figma 641:2898): navy with the 12px line pattern at 5% and a
-   white line at 60% on top. Three columns – logo and tagline, page
+/* Footer (Figma 641:2898): navy with the line pattern at 5% – the 12px
+   tile, on mobile at 60% (7.2px, as the heroes) – and a faint sky line on
+   top. Three columns – logo and tagline, page
    links, contact details – stacked on mobile. */
 const link = "text-white transition-colors hover:text-coral focus-visible:text-coral";
 
 export function Footer() {
   return (
-    <footer className="relative border-t border-white/60 bg-navy px-6 py-20 text-white md:border-sky/5 md:px-10 lg:px-24 lg:py-[116px]">
+    <footer className="relative border-t border-sky/5 bg-navy px-6 py-20 text-white md:px-10 lg:px-24 lg:py-[116px]">
       {/* the pattern */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 bg-[url('/assets/spec-hover-tile.png')] bg-[length:12px_12px] opacity-5"
+        className="pointer-events-none absolute inset-0 bg-[url('/assets/spec-hover-tile.png')] bg-[length:7.2px_7.2px] opacity-5 md:bg-[length:12px_12px]"
       />
       <div className="relative mx-auto flex max-w-[1248px] flex-col gap-[60px] md:flex-row md:flex-wrap md:gap-x-24 md:gap-y-12 lg:gap-x-[198px]">
         <div className="flex flex-col md:gap-4">

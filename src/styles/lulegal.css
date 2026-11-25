@@ -25,10 +25,12 @@
                   calc(var(--nav-h) + var(--eyebrow-h) + 24 * var(--u)));
   --eyebrow-top: calc(var(--list-top) - var(--eyebrow-h) + var(--eyebrow-overlap));
 
-  /* the patterned page background: a 12px line tile over soft glows */
+  /* the patterned page background: a 12px line tile (--pattern; mobile:
+     its own, see the end) over soft glows */
+  --pattern: url("/assets/bg-tile.svg") 0 0 / 12px 12px repeat;
   --mesh: 0 0 / 100vw max(calc(100vw * 1929 / 1440), 100lvh) no-repeat;
   --page-bg:
-    url("/assets/bg-tile.svg") 0 0 / 12px 12px repeat,
+    var(--pattern),
     radial-gradient(60% 55% at 10% 6%,  #f7fbff 0%, rgb(247 251 255 / 0) 100%) var(--mesh),
     radial-gradient(45% 50% at 92% 14%, #e9f5ff 0%, rgb(233 245 255 / 0) 100%) var(--mesh),
     radial-gradient(40% 40% at 52% 46%, #e2f2ff 0%, rgb(226 242 255 / 0) 100%) var(--mesh),
@@ -849,6 +851,11 @@ main > .lx-post-hero + .lx-section { box-shadow: none; }
     --nav-h: 80px;
     --hero-type: 1;
     --list-left: var(--edge);
+    /* the heroes' pattern (Figma: Mobile 904:545, Mobile / blog 925:502):
+       light diagonal lines, the 12px tile at 60% – one every 7.2px. (The
+       tile is spec-hover-tile.png drawn in white at 40%: the colour Figma's
+       lifted highlights give it, measured against Figma's render.) */
+    --pattern: url("/assets/hero-tile.svg") 0 0 / 7.2px 7.2px repeat;
     --row: calc(var(--list-size) + 10px);
     --eyebrow-size: 32px;
     --eyebrow-overlap: -4px;
@@ -873,11 +880,10 @@ main > .lx-post-hero + .lx-section { box-shadow: none; }
   .lx-review:last-child { padding-bottom: 40px; }
   /* (Figma Mobile / blog, Mobile / o nas) a 112px title on a 90px line,
      200px from the top, its 12px square right after the last letter;
-     40px to the lead, 80px under it. O nas: 100px, 160px from the top. */
+     40px to the lead, 80px under it. O nas: a 100px title, at the same 200px. */
   .lx-page-hero { --sec-edge: 24px; --ph-lead: 20px; --ph-gap: 40px; min-height: 0; padding-top: 200px; padding-bottom: 80px; }
   .lx-page-hero__title { font-size: 112px; line-height: 90px; }
   .lx-page-hero__dot { width: 12px; height: 12px; margin-left: 4px; translate: 0 -1px; }   /* 4px after the last letter, 8px above the line's bottom */
-  .lx-page-hero--about { padding-top: 160px; }
   .lx-page-hero--about .lx-page-hero__title { font-size: 100px; }
   .lx-page-hero--about .lx-page-hero__dot { translate: 0 3px; }
   .lx-blog-list { padding-top: 48px; }
